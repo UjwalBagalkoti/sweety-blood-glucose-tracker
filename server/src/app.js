@@ -1,0 +1,24 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
+import { config } from './config.js';
+import authRoutes from './routes/auth.js';
+import readingRoutes from './routes/readings.js';
+import reportRoutes from './routes/reports.js';
+import { requireAuth, notFound, errorHandler } from './middleware.js';
+
+export const app = express();
+app.disable('x-powered-by');
+app.use(helmet());
+app.use(cors({ origin: config.clientOrigin, credentials: true }));
+app.use(express.json({ limit: '20kb' }));
+app.use(cookieParser());
+app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: true, legacyHeaders: false }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+app.use('/api/auth', authRoutes);
+app.use('/api/readings', requireAuth, readingRoutes);
+app.use('/api/reports', requireAuth, reportRoutes);
+app.use(notFound);
+app.use(errorHandler);

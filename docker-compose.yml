@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sweety}
+      POSTGRES_USER: ${POSTGRES_USER:-sweety}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-this-local-password}
+    volumes:
+      - sweety_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sweety} -d ${POSTGRES_DB:-sweety}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  api:
+    build: ./server
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://sweety:change-this-local-password@db:5432/sweety?schema=public}
+      JWT_SECRET: ${JWT_SECRET:-replace-with-a-long-random-secret-at-least-32-characters}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN:-http://localhost:5173}
+      PORT: 4000
+      NODE_ENV: ${NODE_ENV:-development}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+
+  web:
+    build: ./client
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "5173:80"
+
+volumes:
+  sweety_pgdata:
