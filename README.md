@@ -1,5 +1,11 @@
 # Sweety — Blood Glucose Tracker
 
+## Demo
+
+[**Open the live demo**](https://sweety-blood-glucose-tracker-nztrta25s-ujwal.vercel.app)
+
+The deployed app is for demonstration only. Do not enter real personal or medical information.
+
 A full-stack glucose tracking app built with React, Node.js, Express, Prisma and PostgreSQL.
 
 ## Features
